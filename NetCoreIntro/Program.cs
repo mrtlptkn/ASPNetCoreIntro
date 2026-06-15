@@ -1,4 +1,5 @@
 using NetCoreIntro.Middlewares;
+using NetCoreIntro.Payment;
 using NetCoreIntro.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,22 @@ builder.Services.AddScoped<TestService>(); // Herhangi bir classdan DI yapýldýðý
 // Session Yönetimi, Entity Class Her Request newlenecek ise bunu yaptýrmak
 // Request bazlý yeniden kontrol edilmesi gereken filter yapýlarý varsa (AuthorizationHandler)
 //builder.Services.AddTransient<TestService>();
+
+
+// Not: Eðer tek interface birden fazla sýnýf varsa 
+//builder.Services.AddScoped<IPayment,CryptoPayment>();
+//builder.Services.AddScoped<IPayment, VirtualWalletPayment>();
+
+
+// Dependecy Inversion açýsýndan yanlýþ bulduk
+builder.Services.AddScoped<CryptoPayment>();
+builder.Services.AddScoped<VirtualWalletPayment>();
+
+// uygulama ayaða kalktýðýnda bu yapý hata vermeyecek çünkü keyler farklý
+
+builder.Services.AddKeyedScoped<IPayment, CryptoPayment>("Crypto");
+builder.Services.AddKeyedScoped<IPayment, VirtualWalletPayment>("VirtualWallet");
+
 
 
 
@@ -74,7 +91,7 @@ app.Lifetime.ApplicationStopped.Register(() =>
 
 // app.UseApiKeyMiddleware(); // API key doðrulama middleware'ini uygulama pipeline'ýna ekliyoruz. Bu middleware, tüm isteklerde API key doðrulamasý yapacak.
 
-app.UseMiddleware<ExternalServiceInjectionMiddleware>();
+// app.UseMiddleware<ExternalServiceInjectionMiddleware>();
 
 
 app.UseHttpsRedirection();
